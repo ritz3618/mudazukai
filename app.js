@@ -232,10 +232,12 @@ function renderResult() {
   const { values, calc, rank } = state;
   $("result").hidden = false;
   restartAnimation($("envelope").querySelector(".envelope-flap"));
+  restartAnimation($("envelope").querySelector(".envelope-seal"));
   restartAnimation($("letter"));
   renderLetter(false);
 
-  $("s-rank").textContent = `${rank}(${RANK_LABELS[rank]})`;
+  $("rank-stamp").textContent = rank;
+  $("s-rank").textContent = RANK_LABELS[rank];
   $("s-expected").textContent = yen(calc.expected);
   $("s-adjusted").textContent = yen(calc.adjusted);
   $("s-resale").textContent = `約${yen(calc.resale)}`;
