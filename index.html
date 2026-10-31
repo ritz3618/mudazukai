@@ -57,6 +57,14 @@
       </div>
 
       <div class="field">
+        <label class="check" for="consumable">
+          <input id="consumable" name="consumable" type="checkbox" aria-describedby="hint-consumable">
+          <span>使い切りの物ですか?(食べ物・日用品など)</span>
+        </label>
+        <p class="hint" id="hint-consumable">チェックすると、使用頻度の補正・残存価値・判定ランクは出さず、1回あたりの単価と同額換算だけを表示します。</p>
+      </div>
+
+      <div class="field">
         <label for="reason">買う理由 <span class="optional">任意</span></label>
         <textarea id="reason" name="reason" rows="3" placeholder="例: 旅行の写真をきれいに残したい" aria-describedby="err-reason"></textarea>
         <p class="hint">書くと、手紙の中で引用されます。</p>
@@ -86,16 +94,34 @@
 
       <section class="card" aria-labelledby="h-summary">
         <h2 class="card-title" id="h-summary"><span class="step">2</span>数字のまとめ</h2>
-        <div class="verdict">
+        <p class="explain">「1回あたり」は、1回使うごとにかかる費用のことです(価格 ÷ 使う回数)。</p>
+        <div class="verdict" id="verdict">
           <div class="stamp" id="rank-stamp" aria-label="判定ランク"></div>
           <p class="verdict-label" id="s-rank"></p>
         </div>
         <dl class="tiles">
-          <div class="tile"><dt>想定の1回あたり</dt><dd id="s-expected"></dd></div>
-          <div class="tile tile-strong"><dt>補正後の1回あたり</dt><dd id="s-adjusted"></dd></div>
-          <div class="tile"><dt>3年後の残存価値(目安)</dt><dd id="s-resale"></dd></div>
+          <div class="tile">
+            <dt id="dt-expected">想定の1回あたり</dt>
+            <dd id="s-expected"></dd>
+            <p class="formula" id="f-expected"></p>
+          </div>
+          <div class="tile tile-strong" id="tile-adjusted">
+            <dt>補正後の1回あたり</dt>
+            <dd id="s-adjusted"></dd>
+            <p class="formula" id="f-adjusted"></p>
+          </div>
+          <div class="tile" id="tile-resale">
+            <dt>3年後の残存価値(目安)</dt>
+            <dd id="s-resale"></dd>
+            <p class="formula" id="f-resale"></p>
+          </div>
+          <div class="tile" id="tile-equiv" hidden>
+            <dt>同じ金額なら</dt>
+            <dd id="s-equiv"></dd>
+            <p class="formula" id="f-equiv"></p>
+          </div>
         </dl>
-        <p class="note">補正後は「購入後に使用頻度は想定より落ちる」という当サイトの仮定で計算しています。残存価値はあくまで目安です。</p>
+        <p class="note" id="note-decay">補正後は「購入後に使用頻度は想定より落ちる」という当サイトの仮定で計算しています。残存価値はあくまで目安です。</p>
       </section>
 
       <section class="card" aria-labelledby="h-alt">

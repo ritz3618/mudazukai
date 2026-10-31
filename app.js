@@ -8,12 +8,20 @@ import {
   LIMITS,
   DISCLOSURE,
 } from "./config.js";
-import { LETTERS, SIGNATURES, experienceLine, reasonLine } from "./letters.js";
+import {
+  LETTERS,
+  LETTERS_CONSUMABLE,
+  SIGNATURES,
+  experienceLine,
+  reasonLine,
+  reasonLineConsumable,
+} from "./letters.js";
 
 const $ = (id) => document.getElementById(id);
 
 const numberFormat = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 1 });
 
+// values.consumable が true(使い切りの物)のとき、calc は想定の値だけを持ち、rank は null
 let state = null; // { values, calc, rank, ctx, lastTemplate }
 
 // ---- 入力 ----------------------------------------------------------
@@ -60,13 +68,17 @@ function readForm() {
       values[key] = r.value;
     }
   }
-  return firstInvalid ? { firstInvalid } : { values };
+  if (firstInvalid) return { firstInvalid };
+  values.consumable = $("consumable").checked;
+  return { values };
 }
 
 // ---- 計算 ----------------------------------------------------------
 
-function calculate({ price, monthly, months }) {
+function calculate({ price, monthly, months, consumable }) {
   const totalExpected = monthly * months;
+  // 使い切りの物は、使用頻度の補正も残存価値も当てはまらないので計算しない
+  if (consumable) return { totalExpected, expected: price / totalExpected };
   const totalAdjusted = totalExpected * USAGE_DECAY;
   return {
     totalExpected,
@@ -90,14 +102,19 @@ function shuffle(list) {
   return a;
 }
 
-// 同額で買える体験。切り捨てて1未満のものは出さない。最大2つ
-function pickExperiences(price) {
-  const available = EXPERIENCES.map((e) => ({
+// 同額で買える体験すべて。切り捨てて1未満のものは出さない
+function availableExperiences(price) {
+  return EXPERIENCES.map((e) => ({
     label: e.label,
     unit: e.unit,
+    unitPrice: e.unitPrice,
     count: Math.floor(price / e.unitPrice),
   })).filter((e) => e.count >= 1);
-  return shuffle(available).slice(0, 2);
+}
+
+// 手紙に使う体験。最大2つ
+function pickExperiences(price) {
+  return shuffle(availableExperiences(price)).slice(0, 2);
 }
 
 function yen(x) {
@@ -124,12 +141,16 @@ function buildContext(values, calc, rank) {
     rank,
     price: yen(values.price),
     expected: yen(calc.expected),
-    adjusted: yen(calc.adjusted),
-    gap: yen(calc.adjusted - calc.expected),
     monthly: numberFormat.format(values.monthly),
     months: numberFormat.format(values.months),
     totalExpected: numberFormat.format(calc.totalExpected),
-    totalAdjusted: numberFormat.format(calc.totalAdjusted),
+    ...(values.consumable
+      ? {}
+      : {
+          adjusted: yen(calc.adjusted),
+          gap: yen(calc.adjusted - calc.expected),
+          totalAdjusted: numberFormat.format(calc.totalAdjusted),
+        }),
     experiences: [], // renderLetter が引くたびに選び直す
   };
 }
@@ -195,7 +216,8 @@ function restartAnimation(el, className) {
 
 function renderLetter(replay) {
   const { rank, ctx } = state;
-  const templates = LETTERS[rank];
+  const consumable = state.values.consumable;
+  const templates = consumable ? LETTERS_CONSUMABLE : LETTERS[rank];
   let index;
   do {
     index = Math.floor(Math.random() * templates.length);
@@ -206,7 +228,7 @@ function renderLetter(replay) {
   const t = templates[index];
   const paragraphs = [t.opening(ctx), t.cost(ctx)];
   if (ctx.experiences.length > 0) paragraphs.push(experienceLine(ctx));
-  if (ctx.reason) paragraphs.push(reasonLine(ctx));
+  if (ctx.reason) paragraphs.push(consumable ? reasonLineConsumable(ctx) : reasonLine(ctx));
   paragraphs.push(t.closing(ctx));
 
   $("letter-body").replaceChildren(
@@ -222,25 +244,62 @@ function renderLetter(replay) {
 }
 
 function renderShare() {
-  const { rank, calc } = state;
-  const text = `3年後の自分からの手紙が届いた。判定は${rank}ランク(${RANK_LABELS[rank]})、補正後の1回あたりコストは${yen(calc.adjusted)}。`;
+  const { rank, calc, values } = state;
+  const text = values.consumable
+    ? `3年後の自分からの手紙が届いた。1回あたりのコストは${yen(calc.expected)}。`
+    : `3年後の自分からの手紙が届いた。判定は${rank}ランク(${RANK_LABELS[rank]})、補正後の1回あたりコストは${yen(calc.adjusted)}。`;
   const url = `${location.origin}${location.pathname}`;
   $("share").href = `https://x.com/intent/post?text=${encode(text)}&url=${encode(url)}`;
 }
 
-function renderResult() {
+const count = (n) => `${numberFormat.format(n)}回`;
+
+// 使い切りの物のときは、補正後・残存価値・ランクの欄を隠し、中身も空にする
+function renderSummary() {
   const { values, calc, rank } = state;
+  const consumable = values.consumable;
+  const price = yen(values.price);
+
+  $("dt-expected").textContent = consumable ? "1回あたりの単価" : "想定の1回あたり";
+  $("s-expected").textContent = yen(calc.expected);
+  $("f-expected").textContent = `${price} ÷ ${count(calc.totalExpected)}`;
+
+  $("verdict").hidden = consumable;
+  $("tile-adjusted").hidden = consumable;
+  $("tile-resale").hidden = consumable;
+  $("note-decay").hidden = consumable;
+  if (consumable) {
+    for (const id of ["rank-stamp", "s-rank", "s-adjusted", "f-adjusted", "s-resale", "f-resale"]) {
+      $(id).textContent = "";
+    }
+  } else {
+    $("rank-stamp").textContent = rank;
+    $("s-rank").textContent = RANK_LABELS[rank];
+    $("s-adjusted").textContent = yen(calc.adjusted);
+    $("f-adjusted").textContent =
+      `${price} ÷ ${count(calc.totalAdjusted)}(${count(calc.totalExpected)} → ${count(calc.totalAdjusted)})`;
+    $("s-resale").textContent = `約${yen(calc.resale)}`;
+    $("f-resale").textContent = `${price} × ${Math.round(RESALE_RATE * 100)}%`;
+  }
+
+  // 同額換算は、使い切りの物のときだけ数字のまとめに出す(1個以上あるとき)
+  const equivalents = consumable ? availableExperiences(values.price) : [];
+  $("tile-equiv").hidden = equivalents.length === 0;
+  $("s-equiv").textContent = equivalents.map((e) => `${e.label}${e.count}${e.unit}分`).join("\n");
+  $("f-equiv").textContent = equivalents
+    .map((e) => `${price} ÷ ${yen(e.unitPrice)}(1${e.unit})`)
+    .join("\n");
+}
+
+function renderResult() {
+  const { values } = state;
   $("result").hidden = false;
   restartAnimation($("envelope").querySelector(".envelope-flap"));
   restartAnimation($("envelope").querySelector(".envelope-seal"));
   restartAnimation($("letter"));
   renderLetter(false);
 
-  $("rank-stamp").textContent = rank;
-  $("s-rank").textContent = RANK_LABELS[rank];
-  $("s-expected").textContent = yen(calc.expected);
-  $("s-adjusted").textContent = yen(calc.adjusted);
-  $("s-resale").textContent = `約${yen(calc.resale)}`;
+  renderSummary();
 
   const links = buildLinks(values.name);
   fillLinks("links-alt", links.alternatives);
@@ -261,7 +320,7 @@ $("form").addEventListener("submit", (e) => {
     return;
   }
   const calc = calculate(parsed.values);
-  const rank = rankOf(calc.adjusted);
+  const rank = parsed.values.consumable ? null : rankOf(calc.adjusted);
   state = {
     values: parsed.values,
     calc,
