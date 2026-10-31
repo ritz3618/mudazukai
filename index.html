@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3年後の自分からの手紙</title>
+  <meta name="description" content="欲しい物の情報を入力すると、3年後の自分から手紙が届きます。購入前に冷静になるための判断材料です。">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <h1>3年後の自分からの手紙</h1>
+      <p class="lead">欲しい物の情報を入力すると、3年後の自分から手紙が届きます。買う前に、少しだけ冷静になるための判断材料です。</p>
+      <p class="privacy">入力内容は送信も保存もしません。すべてこのブラウザの中で処理します。</p>
+    </header>
+
+    <form id="form" class="card" novalidate autocomplete="off">
+      <div class="field">
+        <label for="name">商品名</label>
+        <input id="name" name="name" type="text" aria-describedby="hint-name err-name">
+        <p class="hint" id="hint-name">検索リンクに使うので、できるだけ具体的に(例: ミラーレスカメラ ○○ △△)</p>
+        <p class="error" id="err-name" role="alert"></p>
+      </div>
+
+      <div class="field">
+        <label for="price">価格(円)</label>
+        <input id="price" name="price" type="text" inputmode="numeric" aria-describedby="err-price">
+        <p class="error" id="err-price" role="alert"></p>
+      </div>
+
+      <div class="field">
+        <label for="monthly">月に使う回数(想定)</label>
+        <input id="monthly" name="monthly" type="text" inputmode="numeric" aria-describedby="err-monthly">
+        <p class="error" id="err-monthly" role="alert"></p>
+      </div>
+
+      <div class="field">
+        <label for="months">使う予定の期間(月)</label>
+        <input id="months" name="months" type="text" inputmode="numeric" aria-describedby="err-months">
+        <p class="error" id="err-months" role="alert"></p>
+      </div>
+
+      <div class="field">
+        <label for="reason">買う理由(任意)</label>
+        <textarea id="reason" name="reason" rows="3" aria-describedby="err-reason"></textarea>
+        <p class="error" id="err-reason" role="alert"></p>
+      </div>
+
+      <button type="submit" class="primary">手紙を受け取る</button>
+    </form>
+
+    <section id="result" class="result" hidden aria-live="polite">
+      <div class="envelope" id="envelope" aria-hidden="true">
+        <div class="envelope-flap"></div>
+        <div class="envelope-body">
+          <p>宛先: 今日のあなた</p>
+          <p>差出人: 3年後のあなた</p>
+        </div>
+      </div>
+
+      <article class="letter" id="letter">
+        <p class="letter-date" id="letter-date"></p>
+        <p class="letter-to">今日のあなたへ</p>
+        <div id="letter-body"></div>
+        <p class="letter-sign" id="letter-sign"></p>
+      </article>
+
+      <section class="card" aria-labelledby="h-summary">
+        <h2 id="h-summary">数字のまとめ</h2>
+        <dl class="summary">
+          <div><dt>判定ランク</dt><dd id="s-rank"></dd></div>
+          <div><dt>想定の1回あたりコスト</dt><dd id="s-expected"></dd></div>
+          <div><dt>補正後の1回あたりコスト</dt><dd id="s-adjusted"></dd></div>
+          <div><dt>3年後の残存価値の目安</dt><dd id="s-resale"></dd></div>
+        </dl>
+        <p class="note">補正後は「購入後に使用頻度は想定より落ちる」という当サイトの仮定で計算しています。残存価値はあくまで目安です。</p>
+      </section>
+
+      <section class="card" aria-labelledby="h-alt">
+        <h2 id="h-alt">買う前に、他の選択肢</h2>
+        <ul class="links" id="links-alt"></ul>
+      </section>
+
+      <section class="card" aria-labelledby="h-buy">
+        <h2 id="h-buy">それでも買うなら</h2>
+        <ul class="links" id="links-buy"></ul>
+        <p class="disclosure" id="disclosure"></p>
+      </section>
+
+      <div class="actions">
+        <button type="button" id="reroll" class="secondary">もう一度書いてもらう</button>
+        <a id="share" class="button secondary" href="#" target="_blank" rel="noopener noreferrer">X でシェア</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p id="footer-disclosure"></p>
+    <p>このサイトは、入力内容を外部に送信・保存しません。</p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
