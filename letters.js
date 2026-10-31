@@ -110,6 +110,34 @@ export const LETTERS = {
   ],
 };
 
+// 使い切りの物用。ランク・補正後のコスト・残存価値には触れない
+export const LETTERS_CONSUMABLE = [
+  {
+    opening: (c) =>
+      `「${c.name}」は、買って、使って、なくなった。使い切りの物のいいところで、少し寂しいところでもある。`,
+    cost: (c) =>
+      `${c.price}を${c.totalExpected}回で割ると、1回あたり${c.expected}。あの頃の私は、この数字を一度も計算しなかった。`,
+    closing: () =>
+      `なくなった物の値段は、案外よく覚えている。君も、いまのうちに数えておくといい。`,
+  },
+  {
+    opening: (c) =>
+      `${c.name}のことは、正直もうほとんど覚えていない。使い切りの物は、そういうものだ。`,
+    cost: (c) =>
+      `月${c.monthly}回を${c.months}か月で、合計${c.totalExpected}回。1回あたりは${c.expected}だった。`,
+    closing: () =>
+      `覚えていないのに、お金だけは確かに減っていた。そう思うと、数字で見ておく価値はある。`,
+  },
+  {
+    opening: (c) =>
+      `「${c.name}」を買うか迷っているね。使い切りだったから、あとには何も残らなかった。`,
+    cost: (c) =>
+      `1回あたり${c.expected}。高いのか安いのかは、使うたびに少しずつ決まっていく種類の値段だ。`,
+    closing: () =>
+      `買うなとは言わない。ただ、毎回この金額を払っている、という感覚だけは持っておいてほしい。`,
+  },
+];
+
 export const SIGNATURES = [
   "3年後の、少しだけ賢くなった私より",
   "3年後の、少しだけ素直になった私より",
@@ -140,4 +168,8 @@ const REASON_LINES = {
 
 export function reasonLine(c) {
   return REASON_LINES[c.rank](c);
+}
+
+export function reasonLineConsumable(c) {
+  return `買う理由は「${c.reason}」だった。気持ちは分かる。私もそう思って買った。`;
 }

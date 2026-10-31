@@ -162,6 +162,31 @@ textarea[aria-invalid="true"] { border-color: var(--error); background: #fff8f7;
   white-space: nowrap;
 }
 
+/* 使い切りチェックボックス */
+.field .check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 48px;
+  margin-bottom: 0;
+  padding: 12px 14px;
+  border: 1px solid #bcb29b;
+  border-radius: 10px;
+  background: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.check input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+}
+.check:has(input:checked) { border-color: var(--accent); background: #fbf1ee; }
+.check:has(input:focus-visible) { outline: 3px solid rgba(138, 58, 43, 0.25); }
+
 .hint { margin: 6px 0 0; font-size: 0.8125rem; color: var(--muted); }
 .error { margin: 6px 0 0; font-size: 0.875rem; color: var(--error); }
 .error:empty { display: none; }
@@ -300,6 +325,17 @@ button:active,
 #letter-body p { text-wrap: pretty; }
 
 /* ---- 数字のまとめ ---- */
+[hidden] { display: none !important; }
+
+.explain {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  background: #faf5ea;
+  border-left: 3px solid var(--gold);
+  border-radius: 4px;
+}
 .verdict { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
 .stamp {
   flex: none;
@@ -332,9 +368,21 @@ button:active,
   border-radius: 10px;
 }
 .tile-strong { background: var(--ink); border-color: var(--ink); color: #f8efdc; }
+/* 同額換算は項目が増えるので、幅いっぱいにして1件ずつ改行する */
+#tile-equiv { grid-column: 1 / -1; }
+#tile-equiv dd { font-size: 1.0625rem; white-space: pre-line; }
 .tile dt { font-size: 0.75rem; line-height: 1.4; color: var(--muted); margin-bottom: 4px; }
 .tile-strong dt { color: var(--gold); }
 .tile dd { margin: 0; font-size: 1.25rem; font-weight: bold; line-height: 1.3; overflow-wrap: anywhere; }
+.formula {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.tile-strong .formula { color: #cdbfa6; }
 .note { margin: 14px 0 0; font-size: 0.8125rem; color: var(--muted); }
 
 /* ---- リンク ---- */
